@@ -25,6 +25,6 @@ class TaskSet(object):
 
     def plot_history(self):
         """ Print the history of the task states """
-        print("Plotting task history... (RED is for BLOCKED, GREEN is for COMPLETED, BLUE is for RUNNING, WHITE is for READY))")
+        print("Plotting task history... (RED is for BLOCKED, GREEN is for COMPLETED, BLUE is for RUNNING, WHITE is for READY, BLACK for NOT_ARRIVED))")
         for task in self.tasks:
             task.plot_history()

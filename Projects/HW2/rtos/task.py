@@ -64,17 +64,17 @@ class Task(object):
         print(f"{self.name}:", end = '\t')
         for state in self.history:
             if state == TaskState.RUNNING:
-                blue("▇")
+                blue("▇▇")
             elif state == TaskState.READY:
-                white("▇")
+                white("▇▇")
             elif state == TaskState.COMPLETED:
-                green("▇")
+                green("▇▇")
             elif state == TaskState.BLOCKED:
-                red("▇")
+                red("▇▇")
             elif state == TaskState.SUSPENDED:
-                yellow("▇")
+                yellow("▇▇")
             elif state == TaskState.NOT_ARRIVED:
-                yellow("▇")
+                black("▇▇")
         print("")
 
 

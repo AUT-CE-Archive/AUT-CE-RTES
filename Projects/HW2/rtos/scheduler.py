@@ -39,13 +39,14 @@ class Scheduler(object):
             # Complete the task if finished execution
             if not task.has_remaining_time:
                 task.set_state(TaskState.COMPLETED)
+                task.save_state()
                 continue
 
             # If task is empty and current task is empty, then set current task to task
             if (task.is_ready or task.is_running) and current_task is None:
                 task.set_state(TaskState.RUNNING)   # Set state to RUNNING (and decrement remaining execution time)
                 current_task = task
-            else:
+            elif task.is_active:
                 task.set_state(TaskState.READY)     # Set state to READY
 
             task.save_state()   # Save the state of the task
