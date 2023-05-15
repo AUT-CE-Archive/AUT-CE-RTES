@@ -31,13 +31,13 @@ def build_tasks(df: DataFrame) -> List[Task]:
     return tasks
 
 
-DURATION = 50
+DURATION = 100
 
 
 if __name__ == '__main__':
 
     # Read CSV
-    tasks_df = read_taskset("data/edf.csv")
+    tasks_df = read_taskset("data/tasks1.csv")
 
     # Initialize tasks
     tasks = build_tasks(tasks_df)
@@ -56,4 +56,4 @@ if __name__ == '__main__':
             pass
 
 
-    taskset.plot_history()
+        taskset.plot_history()

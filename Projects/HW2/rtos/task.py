@@ -64,35 +64,44 @@ class Task(object):
         print(f"{self.name}:", end = '\t')
         for state in self.history:
             if state == TaskState.RUNNING:
-                blue("▇▇")
+                blue("▇")
             elif state == TaskState.READY:
-                white("▇▇")
+                white("▇")
             elif state == TaskState.COMPLETED:
-                green("▇▇")
+                green("▇")
             elif state == TaskState.BLOCKED:
-                red("▇▇")
+                red("▇")
             elif state == TaskState.SUSPENDED:
-                yellow("▇▇")
+                yellow("▇")
             elif state == TaskState.NOT_ARRIVED:
-                black("▇▇")
+                black("▇")
         print("")
 
 
     def next_deadline(self, time: int) -> Optional[int]:
         """ Returns the next deadline of the task (deadline of a periodic task is its next period) """
         if self.is_periodic:
-            return (self.period + 1) * (time // self.period)
+            if time // self.period == 0:
+                deadline = self.act_time + (time // self.period + 1) * self.period
+            else:
+                deadline = self.act_time + (time // self.period) * self.period
         else:
-            return self.daedline
+            deadline = self.act_time + self.daedline
+        print(self.state, deadline, self.remaining_time)
+        return deadline
 
 
     def preflight(self, time: int):
         """ Perform preflight checks on the task """
 
-        # Activate the task if it has arrived
-        if not self.is_active and time >= self.act_time:
-            self.state = TaskState.READY
+        # Reset WCET if task is periodic
+        if self.is_periodic and time % self.period == 1:
+            self.remaining_time = self.wcet
 
+
+    def has_missed_deadline(self, time: int) -> bool:
+        """ Returns True if the task has missed its deadline """
+        return self.next_deadline(time) < time
 
     @property
     def is_running(self) -> bool:
