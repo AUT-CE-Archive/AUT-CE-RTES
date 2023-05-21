@@ -32,13 +32,12 @@ class Scheduler(object):
         all_tasks = self.taskset.get_all_tasks()    # Get ready tasks
         all_tasks_by_deadlines = sorted(all_tasks, key=lambda x: x.next_deadline(time))  # Sort tasks by deadlines
 
+        if time == 75:
+            print(end = "")
+
         current_task = None
-        if time == 21:
-            pass
-
         for task in all_tasks_by_deadlines:
-
-            task.preflight(time)
+            task.preflight(time)            # Preflight checks
 
             # Ignore task if missed deadline
             # if not task.is_complete and task.has_missed_deadline(time):
@@ -46,23 +45,26 @@ class Scheduler(object):
             #     task.save_state()
             #     continue
 
-            # If task has not yet been activated
-            if not task.is_active:
-                if time >= task.act_time:
-                    task.set_state(TaskState.READY)
-                else:
-                    task.set_state(TaskState.NOT_ARRIVED)
-                    task.save_state()
-                    continue
-
-            # If task is complete
-            if not task.has_remaining_time:
+            # If completed
+            if task.is_complete and task.remaining_time == 0:
                 task.set_state(TaskState.COMPLETED)
                 task.save_state()
                 continue
 
+            # If not arrived
+            if not task.is_active:
+                task.set_state(TaskState.NOT_ARRIVED)
+                task.save_state()
+                continue
+
+            # If a task is already running
+            if current_task is not None:
+                task.set_state(TaskState.READY)
+                task.save_state()
+                continue
+
             # If task is empty and current task is empty, then set current task to task
-            if (task.is_ready or task.is_running) and current_task is None:
+            if task.is_ready or task.is_running:
                 task.set_state(TaskState.RUNNING)
                 task.save_state()
                 current_task = task

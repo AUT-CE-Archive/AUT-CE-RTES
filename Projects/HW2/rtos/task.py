@@ -81,13 +81,12 @@ class Task(object):
     def next_deadline(self, time: int) -> Optional[int]:
         """ Returns the next deadline of the task (deadline of a periodic task is its next period) """
         if self.is_periodic:
-            if time // self.period == 0:
-                deadline = self.act_time + (time // self.period + 1) * self.period
-            else:
+            if time % self.period == 0:
                 deadline = self.act_time + (time // self.period) * self.period
+            else:
+                deadline = self.act_time + (time // self.period + 1) * self.period
         else:
             deadline = self.act_time + self.daedline
-        print(self.state, deadline, self.remaining_time)
         return deadline
 
 
@@ -95,8 +94,16 @@ class Task(object):
         """ Perform preflight checks on the task """
 
         # Reset WCET if task is periodic
-        if self.is_periodic and time % self.period == 1:
+        if self.is_periodic and time % self.period == 0:
             self.remaining_time = self.wcet
+
+        # Set state as completed if task has no remaining execution time
+        if self.remaining_time == 0:
+            self.set_state(TaskState.COMPLETED)
+
+        # Activate task if arrival time is reached
+        if self.act_time == time:
+            self.set_state(TaskState.READY)
 
 
     def has_missed_deadline(self, time: int) -> bool:
