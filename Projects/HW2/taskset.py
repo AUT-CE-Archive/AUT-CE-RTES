@@ -11,6 +11,7 @@ class TaskSet(object):
         self.tasks = tasks
         self.utility = 0
         self.feaible = False
+        self.algorithm = None
 
 
     def add_task(self, task: Task) -> None:
@@ -26,5 +27,7 @@ class TaskSet(object):
     def plot_history(self):
         """ Print the history of the task states """
         # print("Plotting task history... (RED is for BLOCKED, GREEN is for COMPLETED, BLUE is for RUNNING, WHITE is for READY, BLACK for NOT_ARRIVED))")
+        print(f"Scheduling with {self.algorithm}:")
         for task in self.tasks:
             task.plot_history()
+        print()

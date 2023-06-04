@@ -1,47 +1,55 @@
-import csv
-from task import Task
-from task_set import TaskSet
-from RTOS import RTOS
-from schedular import Scheduler
-from printer import TaskSetPrinter as Printer
+# Standard imports
+from pandas import DataFrame, read_csv
+from typing import List
+
+# Third-party imports
+from task import Task, TaskState, TaskType
+from taskset import TaskSet
+from scheduler import Scheduler
 
 
-class Main:
-    def __init__(self):
-        self.rtos = RTOS()
-        self.task_set = TaskSet()
+def read_taskset(path: str) -> DataFrame:
+    """ Reads a task set from a csv file and returns a pandas DataFrame """
+    return read_csv(path)
 
-    def run(self):
-        # create tasks and add them to task set
-        self.read_tasks_from_csv('tasks1.csv')
 
-        # schedule tasks using EDF algorithm
-        self.rtos.set_task_set(self.task_set)
-        # you need to find hyper period and change duration to hyper period
-        duration = 350
-        self.rtos.run(duration)
+def build_tasks(df: DataFrame) -> List[Task]:
+    """ Builds a list of tasks from a pandas DataFrame """
+    tasks = []
+    for _, task in df.iterrows():
+        tasks.append(
+            Task(
+                name=task['name'],
+                state=TaskState.NOT_ARRIVED,
+                type=TaskType(task['type']),
+                act_time=task['act_time'],
+                period=task['period'],
+                wcet=task['wcet'],
+                deadline=task['deadline']
+            )
+        )
+    return tasks
 
-    def read_tasks_from_csv(self, filename):
-        with open(filename, 'r') as csvfile:
-            # header in csv file: priority,name,  state, type, act_time, period, wcet, deadline
-            taskreader = csv.reader(csvfile, delimiter=',',)
-            next(taskreader, None)  # skip the headers
-            for row in taskreader:
-                priority, name,  state, type, act_time, period, wcet, deadline = row
-                print(f"priority: {priority}\t\tname: {name}\t\tstate: {state}\t\ttype: {type}\t\tact_time: {act_time}\t\tperiod: {period}\t\twcet: {wcet}\t\tdeadline: {deadline}")
-                task = Task(
-                    priority=int(priority),
-                    name=name,
-                    state=int(state),
-                    type=int(type),
-                    act_time=int(act_time),
-                    period=int(period),
-                    wcet=int(wcet),
-                    deadline=int(deadline)
-                )
-                self.task_set.add_task(task)
+
+DURATION = 100
 
 
 if __name__ == '__main__':
-    main = Main()
-    main.run()
+
+    # Read CSV
+    tasks_df = read_taskset("data/tasks1.csv")
+    # tasks_df = read_taskset("data/tasks2.csv")
+    # tasks_df = read_taskset("data/tasks_interrupts.csv")
+
+    # Initialize scheduler
+    for algorithm in ["dm", "rm", "edf_preemptive", "edf_non_preemptive"]:
+        tasks = build_tasks(tasks_df)
+        taskset = TaskSet(tasks)
+        scheduler = Scheduler(taskset, algorithm)
+
+        # Run RTOS
+        for time in range(DURATION):
+            next_task = scheduler.schedule(time)
+
+        # Plot task history
+        taskset.plot_history()
